@@ -1,10 +1,11 @@
 ﻿using System;
-using EventStore.ClientAPI;
 
 namespace DurableSubscriber
 {
     public interface IPushSource
     {
-        IDisposable Subscribe(Action<RecordedEvent> handler);
+        event EventHandler<RecordedEventEventArgs> Event;
+        void Start();
+        void Stop();
     }
 }

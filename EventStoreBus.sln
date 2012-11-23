@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DurableSubscriber", "DurableSubscriber\DurableSubscriber.csproj", "{719CE30B-1A4D-4223-BD62-4F07FFBA9C66}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DurableSubscriber.Tests", "DurableSubscriber.Tests\DurableSubscriber.Tests.csproj", "{4C0E6C81-3952-48FB-B8A8-4EF5B295B276}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{719CE30B-1A4D-4223-BD62-4F07FFBA9C66}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{719CE30B-1A4D-4223-BD62-4F07FFBA9C66}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{719CE30B-1A4D-4223-BD62-4F07FFBA9C66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C0E6C81-3952-48FB-B8A8-4EF5B295B276}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C0E6C81-3952-48FB-B8A8-4EF5B295B276}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C0E6C81-3952-48FB-B8A8-4EF5B295B276}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C0E6C81-3952-48FB-B8A8-4EF5B295B276}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
