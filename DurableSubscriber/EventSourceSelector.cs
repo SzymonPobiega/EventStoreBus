@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
@@ -11,13 +12,15 @@ namespace DurableSubscriber
         private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private readonly IPullSource pullSource;
         private readonly IPushSource pushSource;
-        private readonly EventBuffer buffer = new EventBuffer();
+        private readonly EventBuffer buffer;
+        private Task processingTask;
 
-        public EventSourceSelector(IPullSource pullSource, IPushSource pushSource)
+        public EventSourceSelector(IPullSource pullSource, IPushSource pushSource, IEventIdentityExtractor eventIdentityExtractor)
         {
             this.pullSource = pullSource;
             this.pushSource = pushSource;
             pushSource.Event += BufferEvent;
+            this.buffer = new EventBuffer(eventIdentityExtractor);
         }
 
         private void BufferEvent(object sender, RecordedEventEventArgs e)
@@ -29,29 +32,24 @@ namespace DurableSubscriber
 
         public void Start()
         {
-            var processingTask = Task.Factory
+            processingTask = Task.Factory
                 .StartNew(ReadAllFromPullSource, cancellationTokenSource.Token)
                 .ContinueWith(x => StartPushSource(), cancellationTokenSource.Token)
                 .ContinueWith(x => ReadOnceFromPullSource(), cancellationTokenSource.Token)
-                .ContinueWith(x => StartProcessingFromPushSource(), cancellationTokenSource.Token);
-
-            processingTask.Wait();
+                .ContinueWith(x => StartProcessingFromPushSource(x.Result), cancellationTokenSource.Token);
         }
 
-        private void StartProcessingFromPushSource()
+        private void StartProcessingFromPushSource(IEnumerable<object> lastPulledSlice)
         {
-            var processorTask = buffer.StartProcessing(OnEvent);
+            var processorTask = buffer.StartProcessing(lastPulledSlice, OnEvent);
             processorTask.Wait();
         }
 
-        private void ReadOnceFromPullSource()
+        private IEnumerable<object> ReadOnceFromPullSource()
         {
             var slice = pullSource.ReadSlice();
-            if (slice.IsEndOfStream)
-            {
-                return;
-            }
-            ProcessEvents(slice.Events);
+            ProcessEvents(slice);
+            return slice;
         }
         
         private void StartPushSource()
@@ -64,15 +62,15 @@ namespace DurableSubscriber
             while (!cancellationTokenSource.Token.IsCancellationRequested)
             {
                 var slice = pullSource.ReadSlice();                
-                if (slice.IsEndOfStream)
+                if (!slice.Any())
                 {
                     break;
                 }
-                ProcessEvents(slice.Events);
+                ProcessEvents(slice);
             }
         }
 
-        private void ProcessEvents(IEnumerable<RecordedEvent> events)
+        private void ProcessEvents(IEnumerable<object> events)
         {
             foreach (var evnt in events)
             {
@@ -80,7 +78,7 @@ namespace DurableSubscriber
             }
         }
 
-        private void OnEvent(RecordedEvent evnt)
+        private void OnEvent(object evnt)
         {
             if (Event != null)
             {
@@ -92,7 +90,8 @@ namespace DurableSubscriber
         {
             pushSource.Stop();
             buffer.Complete();
-            cancellationTokenSource.Cancel();                        
+            //cancellationTokenSource.Cancel();
+            processingTask.Wait();                 
         }
     }
 }

@@ -5,9 +5,9 @@ namespace DurableSubscriber
 {
     public class RecordedEventEventArgs : EventArgs
     {
-        public readonly RecordedEvent Event;
+        public readonly object Event;
 
-        public RecordedEventEventArgs(RecordedEvent evnt)
+        public RecordedEventEventArgs(object evnt)
         {
             Event = evnt;
         }

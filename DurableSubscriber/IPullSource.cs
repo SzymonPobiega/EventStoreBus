@@ -1,9 +1,10 @@
-﻿using EventStore.ClientAPI;
+﻿using System.Collections.Generic;
+using EventStore.ClientAPI;
 
 namespace DurableSubscriber
 {
     public interface IPullSource
     {
-        EventStreamSlice ReadSlice();
+        IEnumerable<object> ReadSlice();
     }
 }

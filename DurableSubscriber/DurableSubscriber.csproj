@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="EventBuffer.cs" />
     <Compile Include="EventSourceSelector.cs" />
+    <Compile Include="IEventIdentityExtractor.cs" />
     <Compile Include="IPullSource.cs" />
     <Compile Include="IPushSource.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

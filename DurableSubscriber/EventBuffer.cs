@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
 
@@ -7,9 +9,15 @@ namespace DurableSubscriber
 {
     public class EventBuffer
     {
-        private readonly BlockingCollection<RecordedEvent> store = new BlockingCollection<RecordedEvent>();
+        private readonly IEventIdentityExtractor eventIdentityExtractor;
+        private readonly BlockingCollection<object> store = new BlockingCollection<object>();
 
-        public void Add(RecordedEvent evnt)
+        public EventBuffer(IEventIdentityExtractor eventIdentityExtractor)
+        {
+            this.eventIdentityExtractor = eventIdentityExtractor;
+        }
+
+        public void Add(object evnt)
         {
             store.Add(evnt);
         }
@@ -19,12 +27,19 @@ namespace DurableSubscriber
             store.CompleteAdding();
         }
 
-        public Task StartProcessing(Action<RecordedEvent> handler)
+        public Task StartProcessing(IEnumerable<object> lastPulledSlice, Action<object> handler)
         {
+            var processed = new HashSet<object>(lastPulledSlice.Select(x => eventIdentityExtractor.GetIdentity(x)));
+
             var task = Task.Factory.StartNew(() =>
                                       {
                                           foreach (var evnt in store.GetConsumingEnumerable())
                                           {
+                                              var identity = eventIdentityExtractor.GetIdentity(evnt);
+                                              if (processed.Contains(identity))
+                                              {
+                                                  continue;
+                                              }
                                               handler(evnt);
                                           }
                                       });
