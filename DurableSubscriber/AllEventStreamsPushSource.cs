@@ -19,7 +19,7 @@ namespace DurableSubscriber
             connection.SubscribeToAllStreamsAsync(OnEvent,
                                                   () =>
                                                       { throw new NotImplementedException("Dropping not yet implemted");
-                                                      }).Wait();
+                                                      });
         }
 
         private void OnEvent(RecordedEvent recordedEvent, Position position)
